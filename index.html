@@ -254,6 +254,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--surface);co
         <button class="sb-item" onclick="gp('access',this)">
           <span class="si"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>Student Access
         </button>
+        <button class="sb-item" onclick="gp('reflectInst',this)">
+          <span class="si"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>Reflections
+        </button>
       </div>
       <!-- Student nav -->
       <div class="sb-sec hidden" id="studNav">
@@ -266,6 +269,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--surface);co
         </button>
         <button class="sb-item" onclick="gp('myRes',this)">
           <span class="si"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>My Results
+        </button>
+        <button class="sb-item" onclick="gp('reflect',this)">
+          <span class="si"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>My Reflection
         </button>
       </div>
     </div>
@@ -512,6 +518,44 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--surface);co
         <div id="myResDiv"></div>
       </div>
 
+
+      <!-- ── STUDENT: REFLECTION ── -->
+      <div class="page hidden" id="page-reflect">
+        <div class="pg-title">Case Reflection</div>
+        <div class="pg-sub">Share your thoughts on the pharmacovigilance case</div>
+        <div class="card" style="text-align:center;padding:40px 30px">
+          <div style="width:64px;height:64px;background:var(--teal-l);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+            <svg viewBox="0 0 24 24" style="width:28px;height:28px;fill:none;stroke:var(--teal);stroke-width:2;stroke-linecap:round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+          <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:10px">Submit Your Reflection</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.75;max-width:480px;margin:0 auto 28px">
+            After reviewing the patient case and completing the assessment, click the button below to open the reflection form. You will be asked to enter your <strong>full name</strong>, <strong>university ID</strong>, and your <strong>reflection</strong> on what you learned.
+          </div>
+          <button class="btn-prim" style="width:auto;padding:13px 36px;font-size:14px;display:inline-flex;align-items:center;gap:10px;margin:0 auto" onclick="openReflectionForm()">
+            <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Start My Reflection
+          </button>
+          <div style="margin-top:20px;font-size:11px;color:var(--text3)">Opens in a new tab — your response goes directly to Dr. Muflih</div>
+        </div>
+      </div>
+
+      <!-- ── INSTRUCTOR: ALL REFLECTIONS ── -->
+      <div class="page hidden" id="page-reflectInst">
+        <div class="pg-title">Student Reflections</div>
+        <div class="pg-sub">All submitted reflections — visible to Dr. Muflih only</div>
+        <div class="alert-box alert-blue">
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div>Reflections submitted via the Google Form appear in your linked Google Sheet in real time. Click the button below to open your responses. Students who submit directly on this page are also shown below.</div>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn-prim" style="width:auto;padding:11px 24px;display:flex;align-items:center;gap:8px" onclick="openGoogleForm(true)">
+            <svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Open Google Form Responses
+          </button>
+        </div>
+        <div id="reflectInstList"></div>
+      </div>
+
     </div><!-- /main -->
   </div><!-- /app-inner -->
 </div><!-- /app -->
@@ -527,7 +571,7 @@ const S = {
   role: '', user: '',
   patients: [], questions: [], results: [],
   meds: [], opts: [],
-  editMeds: [], editOpts: [],
+  editMeds: [], editOpts: [], reflections: [],
   _editPtIdx: -1, _editQIdx: -1, _editCorrect: 0,
   quizAns: {}, submitted: false,
   viewingPtIdx: -1
@@ -685,6 +729,7 @@ function gp(name, btn) {
   if (name === 'quiz') renderQuiz();
   if (name === 'results') renderResults();
   if (name === 'myRes') renderMyRes();
+  if (name === 'reflectInst') renderReflectInst();
   if (name === 'addPt') { S.meds = [{name:'',dose:'',freq:'',route:'PO',flags:[],flagNote:''}]; renderMedRows(); }
   if (name === 'addQ') { S.opts = ['','','']; renderOptRows(); }
 }
@@ -1587,6 +1632,57 @@ function renderMyRes() {
     </div>`;
   }).join('');
 }
+
+// ═══════════════════════════════════════════
+// GOOGLE FORM LINK — paste your form URL here
+// ═══════════════════════════════════════════
+const GOOGLE_FORM_URL = 'https://forms.gle/b1et8Rk3HVWyCdQh6';
+
+// ═══════════════════════════════════════════
+// REFLECTIONS
+// ═══════════════════════════════════════════
+function openReflectionForm() {
+  window.open(GOOGLE_FORM_URL, '_blank');
+}
+
+function submitReflection() {
+  openReflectionForm();
+}
+
+function openGoogleForm(isResponseSheet) {
+  if (!GOOGLE_FORM_URL || GOOGLE_FORM_URL === 'YOUR_GOOGLE_FORM_LINK_HERE') {
+    alert('Google Form link not set yet. Please paste your Google Form URL into the platform and re-upload to GitHub.');
+    return;
+  }
+  window.open(GOOGLE_FORM_URL, '_blank');
+}
+
+function renderReflectInst() {
+  const el = document.getElementById('reflectInstList');
+  const refs = S.reflections || [];
+  if (!refs.length) {
+    el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><p>No reflections submitted yet in this session.<br>Submissions via Google Form appear in your Google Sheet.</p></div>';
+    return;
+  }
+  el.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:12px">${refs.length} reflection${refs.length>1?'s':''} submitted this session</div>` +
+  refs.map((r, i) => `
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--navy)">${r.name}</div>
+          <div style="font-size:12px;color:var(--text3)">ID: ${r.uid} &bull; Submitted: ${r.date} at ${r.time}</div>
+        </div>
+        <span style="font-size:11px;background:var(--teal-l);color:var(--teal);padding:3px 10px;border-radius:10px;font-weight:600">Reflection ${i+1}</span>
+      </div>
+      <div style="background:var(--surface);border-radius:9px;padding:14px;font-size:13px;color:var(--text);line-height:1.75;border-left:3px solid var(--accent)">
+        ${r.text.split('\n').join('<br>')}
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text3)">${r.text.trim().split(' ').filter(function(w){return w.length>0;}).length} words</div>
+    </div>`).join('');
+}
+
+// Word counter removed — reflection uses Google Form directly
+
 </script>
 </body>
 </html>
